@@ -1,0 +1,3 @@
+allure-results/** binary
+allure-results/** -diff
+allure-results/** generated
