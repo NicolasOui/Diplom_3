@@ -2,6 +2,7 @@ package tests;
 
 import api.CreateUser;
 import api.CreateUserSteps;
+import tests.helper.RandomDataUser;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import io.qameta.allure.junit4.DisplayName;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import pages.LoginPage;
 import pages.MainPage;
-import java.util.Random;
 
 @Feature("Авторизация пользователя")
 public class LoginTest extends BaseTest {
@@ -20,8 +20,7 @@ public class LoginTest extends BaseTest {
     private LoginPage loginPage;
     private CreateUserSteps userSteps;
     private String userEmail;
-    private final String userPassword = "password123";
-    private final String userName = "ТестовыйВход";
+    private String userPassword;
     private String accessToken;
 
     @Before
@@ -29,9 +28,11 @@ public class LoginTest extends BaseTest {
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
         userSteps = new CreateUserSteps();
-        userEmail = "login_test_user_" + new Random().nextInt(100000) + "@yandex.ru";
 
-        CreateUser user = new CreateUser(userEmail, userPassword, userName);
+        CreateUser user = RandomDataUser.generate();
+        userEmail = user.getEmail();
+        userPassword = user.getPassword();
+
         Response response = userSteps.register(user);
         accessToken = response.path("accessToken");
         mainPage.open(baseUrl);

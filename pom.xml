@@ -73,6 +73,14 @@
             <artifactId>allure-rest-assured</artifactId>
             <version>2.25.0</version>
         </dependency>
+
+        <!-- Генератор реалистичных тестовых данных DataFaker -->
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>1.9.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

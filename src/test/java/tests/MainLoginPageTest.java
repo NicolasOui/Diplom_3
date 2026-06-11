@@ -2,6 +2,7 @@ package tests;
 
 import api.CreateUser;
 import api.CreateUserSteps;
+import tests.helper.RandomDataUser;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import io.qameta.allure.junit4.DisplayName;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import pages.MainPage;
 import pages.LoginPage;
-import java.util.Random;
 
 @Feature("Регистрация пользователя")
 public class MainLoginPageTest extends BaseTest {
@@ -20,19 +20,19 @@ public class MainLoginPageTest extends BaseTest {
     private LoginPage loginPage;
     private CreateUserSteps userSteps;
     private String lastRegisteredEmail;
-    private final String testPassword = "password123";
+    private String lastRegisteredPassword;
 
     @Before
     public void initPages() {
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
-        userSteps = new CreateUserSteps(); // Инициализируем API-шаги
+        userSteps = new CreateUserSteps();
     }
 
     @After
     public void cleanUpRegisteredUser() {
         if (lastRegisteredEmail != null) {
-            CreateUser creds = new CreateUser(lastRegisteredEmail, testPassword, null);
+            CreateUser creds = new CreateUser(lastRegisteredEmail, lastRegisteredPassword, null);
             Response response = userSteps.login(creds);
             String token = response.path("accessToken");
 
@@ -48,17 +48,17 @@ public class MainLoginPageTest extends BaseTest {
         loginPage.clickRegisterLink();
     }
 
-    private String generateRandomEmail() {
-        return "burger_user_" + new Random().nextInt(100000) + "@yandex.ru";
-    }
-
     @Test
     @DisplayName("Успешная регистрация")
     @Description("Проверка успешной регистрации пользователя с валидными данными и последующим очищением бд")
     public void successRegistrationTest() {
         openRegistrationForm();
-        lastRegisteredEmail = generateRandomEmail();
-        loginPage.registerUser("Владимир", lastRegisteredEmail, testPassword);
+
+        CreateUser user = RandomDataUser.generate();
+        lastRegisteredEmail = user.getEmail();
+        lastRegisteredPassword = user.getPassword();
+
+        loginPage.registerUser(user.getName(), lastRegisteredEmail, lastRegisteredPassword);
         boolean isLoginVisible = loginPage.isLoginHeadingDisplayed();
         Assertions.assertThat(isLoginVisible)
                 .as("После успешной регистрации должен отображаться экран Входа")
@@ -70,7 +70,10 @@ public class MainLoginPageTest extends BaseTest {
     @Description("Проверка появления ошибки 'Некорректный пароль' при вводе пароля менее 6 символов")
     public void registrationWithShortPasswordShowsErrorTest() {
         openRegistrationForm();
-        loginPage.registerUser("Владимир", generateRandomEmail(), "12345");
+
+        CreateUser user = RandomDataUser.generate();
+        loginPage.registerUser(user.getName(), user.getEmail(), "12345");
+
         String errorText = loginPage.getPasswordErrorText();
         Assertions.assertThat(errorText)
                 .as("Должна отображаться ошибка некорректного пароля")
